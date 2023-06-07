@@ -57,6 +57,7 @@ def main():
     while True:
         _,_,_,y,_=sys(input_func(sys.step))
         print(y)
+        #TODO:将各种数据用图表显示出来
     return
 
 if __name__=='__main__':
