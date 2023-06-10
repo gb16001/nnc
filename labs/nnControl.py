@@ -18,7 +18,7 @@ class nnController(nn.Module):
         r'''err is (e,de,dde).'''
         # 访问权重
         weight = self.L1.weight
-        print(weight)
+        # print(weight)
         result = self.activate1(self.L1(err))
         self.out = result
         return result
@@ -29,12 +29,12 @@ class nnController(nn.Module):
         self.loss_fn = nn.MSELoss()  # 使用均方误差作为损失函数
         # 定义优化器
         # 使用随机梯度下降作为优化器，学习率为0.01
-        self.optimizer = optim.SGD(sysControler.parameters(), lr=0.01)
+        self.optimizer = optim.SGD(self.parameters(), lr=0.01)
         return
 
-    def backward(self, obj):
+    def backward(self, out,obj):
         r'learn once,set by backward_initSet()'
-        self.loss = self.loss_fn(self.out, obj)
+        self.loss = self.loss_fn(out, obj)
         # 反向传播
         self.optimizer.zero_grad()
         self.loss.backward()
@@ -55,14 +55,13 @@ if __name__ == '__main__':
     sysControler.backward_initSet()
 
     total_epochs: int = 100
-    loss_history = [0]*total_epochs
+    loss_history = [0.]*total_epochs
     for epoch in range(total_epochs):
         # infer
         outNum = sysControler(inVector)
         print(f'output:\n{outNum}')
-
         # back transfer
-        loss_history[epoch] = sysControler.backward(objNum)
+        loss_history[epoch] = sysControler.backward(outNum,objNum)
         print(f'loss:{loss_history[epoch]:.4f}')
         # 打印epoch
         print('Epoch [{}/{}]'.format(epoch+1, total_epochs))
