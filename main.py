@@ -52,7 +52,7 @@ class system:
         self.u+=du
         self.output=self.actuator(self.u)
         self.feedback=self.detector(self.output)
-        return (self.step,self.err,self.u,self.output,self.feedback)
+        return (self.step,self.err,self.u,self.output,self.feedback,du)
         pass
     
 def input_func(step):
@@ -64,11 +64,11 @@ def main():
     sys=system()
     total_epochs: int = 100
     loss_history = [0.]*total_epochs
-    sys.controller.backward_initSet()#learning init
+    sys.controller.backward_initSet('MyLoss')#learning init
     for epoch in range(total_epochs):
-        _,e,u,y,f=sys(input_func(sys.step))
-        #FIXME:这里的反向传播由于输入值和标准值都没有梯度，所以无法进行
-        sys.controller.backward(torch.tensor(e,dtype=torch.float32) ,torch.tensor(0,dtype=torch.float32))
+        _,e,u,y,f,du=sys(input_func(sys.step))
+        sys.controller.backward(torch.tensor(e,dtype=torch.float32) ,torch.tensor(0,dtype=torch.float32),du)
+        #这里使用du，这样只用一轮的梯度
         print(e)
         loss_history[epoch]=u.detach().numpy()[0]
         print('Epoch [{}/{}]'.format(epoch+1, total_epochs))
@@ -76,7 +76,7 @@ def main():
 
     # 绘制图形
     import matplotlib.pyplot as plt
-    plt.plot(loss_history[:10])
+    plt.plot(loss_history[:100])
     plt.show()
     return
 
